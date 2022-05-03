@@ -1,0 +1,39 @@
+from bs4 import BeautifulSoup
+from selenium import webdriver
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.common.by import By
+from time import sleep
+driver=webdriver.Firefox()
+
+data={}
+url='https://ird.gov.np/pan-search'
+
+driver.get(url)
+driver.find_element(By.ID,"pan").send_keys("606816069")
+text1=driver.find_element(By.XPATH,"//label[@for='name']").text
+text2=int(text1[8])
+text3=int(text1[10])
+text4=text2+text3
+driver.find_element(By.ID,"captcha").send_keys(text4)
+driver.find_element(By.ID,"submit").click()
+WebDriverWait(driver, 10).until(lambda driver: driver.find_element(by = By.CSS_SELECTOR, value = 'tr:nth-child(2) td+ td'))
+html= driver.page_source
+soup = BeautifulSoup(html, 'html.parser')
+
+data["office"]=soup.select('tr:nth-child(2) td+ td')[0].text
+data["pan"]=soup.select('tr:nth-child(3) td+ td')[0].text
+data["name"]=soup.select('tr:nth-child(4) td+ td')[0].text
+data["telephone"]=soup.select('tr:nth-child(5) td+ td')[0].text
+data["ward"] = soup.select('tr:nth-child(6) td+ td')[0].text
+data["street"] = soup.select('tr:nth-child(7) td+ td')[0].text
+data["city"] = soup.select('tr:nth-child(8) td+ td')[0].text
+data["type"] = soup.select('tr:nth-child(11) td:nth-child(1)')[0].text
+data["reg_date"] = soup.select('tr:nth-child(11) td:nth-child(2)')[0].text
+data["status"] = soup.select('tr:nth-child(11) td:nth-child(3)')[0].text
+data["fiscal_year"] = soup.select('tr:nth-child(13) td+ td')[0].text
+import json
+with open("aaa.json", "w") as outfile:
+    json.dump(data, outfile)
+
+sleep(2)
+driver.quit()
